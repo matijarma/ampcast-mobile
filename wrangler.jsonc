@@ -8,7 +8,7 @@
 // The static app is served from `app/www` (built by `npm run build:pwa`); the tiny
 // Worker in `worker/index.js` only handles `/proxy-login`. See DEPLOY-CLOUDFLARE.md.
 {
-    "name": "ampcast",
+    "name": "ampcast-mobile",
     "main": "./worker/index.js",
     "compatibility_date": "2026-06-01",
     "assets": {
