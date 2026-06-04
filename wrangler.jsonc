@@ -1,10 +1,19 @@
-// Cloudflare Pages configuration.
-// The project is deployed by connecting this repo to Cloudflare Pages via Git:
-//   build command:    npm run build:pwa
-//   build output dir: app/www   (declared below)
-// See DEPLOY-CLOUDFLARE.md for the full walkthrough.
+// Cloudflare Workers configuration (Workers Builds / `wrangler deploy`).
+//
+// Deployed by connecting this repo in the Cloudflare dashboard (Workers & Pages →
+// import repository). Configure the build like this:
+//   build command:  npm run build:pwa
+//   deploy command: npx wrangler deploy
+//
+// The static app is served from `app/www` (built by `npm run build:pwa`); the tiny
+// Worker in `worker/index.js` only handles `/proxy-login`. See DEPLOY-CLOUDFLARE.md.
 {
     "name": "ampcast",
-    "pages_build_output_dir": "./app/www",
-    "compatibility_date": "2026-06-01"
+    "main": "./worker/index.js",
+    "compatibility_date": "2026-06-01",
+    "assets": {
+        "directory": "./app/www",
+        "binding": "ASSETS",
+        "not_found_handling": "404-page"
+    }
 }

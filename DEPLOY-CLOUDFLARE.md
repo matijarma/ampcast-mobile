@@ -1,30 +1,34 @@
-# Deploying ampcast to Cloudflare Pages (via GitHub)
+# Deploying ampcast to Cloudflare (Workers Builds, via GitHub)
 
-This fork is set up so the **whole repository** deploys to Cloudflare Pages with a
-Git connection. The webpack `pwa` build produces a fully static app; an optional
-Pages Function provides the `/proxy-login` endpoint.
+This fork deploys to Cloudflare as a **Worker with static assets** — the model used by
+Cloudflare's Git integration ("Import a repository"). The webpack `pwa` build produces
+a fully static app served from the edge; a tiny Worker (`worker/index.js`) handles the
+one dynamic endpoint (`/proxy-login`).
 
 ## One-time setup
 
 1. **Push this repository to GitHub** (the whole repo — `src/` alone cannot build).
 
-2. **Cloudflare Dashboard → Workers & Pages → Create → Pages → Connect to Git**, pick the repo.
+2. **Cloudflare Dashboard → Workers & Pages → Create → import your Git repository.**
 
-3. **Build settings**:
+3. **Build configuration** (Settings → Build, or during creation):
 
    | Setting | Value |
    |---|---|
-   | Framework preset | None |
    | Build command | `npm run build:pwa` |
-   | Build output directory | `app/www` |
+   | Deploy command | `npx wrangler deploy` |
 
-   The output directory is also declared in [`wrangler.jsonc`](./wrangler.jsonc)
-   (`pages_build_output_dir`). Node 24 is selected automatically via
-   [`.node-version`](./.node-version).
+   Everything else comes from [`wrangler.jsonc`](./wrangler.jsonc): the Worker entry
+   (`worker/index.js`) and the static assets directory (`app/www`). Node 24 is picked
+   up from [`.node-version`](./.node-version).
 
-4. **Environment variables** (Settings → Environment variables) — all optional.
+   > ⚠️ The **build command must run before deploy** — `wrangler deploy` uploads
+   > whatever is in `app/www`, and the versioned bundles only exist after
+   > `npm run build:pwa`.
+
+4. **Build-time environment variables** (Settings → Build → Variables) — all optional.
    These are **baked into the bundle at build time** (the `pwa` build target), so
-   changing them requires a redeploy (Deployments → Retry / new commit):
+   changing them requires a redeploy:
 
    | Variable | Purpose |
    |---|---|
@@ -37,59 +41,57 @@ Pages Function provides the `/proxy-login` endpoint.
    | `ENABLED_SERVICES` | Comma-separated service allow-list (blank = all) |
    | `STARTUP_SERVICES` | Initially visible services (blank = startup wizard) |
 
-   See [`.env.example`](./.env.example) for details. Personal media servers
-   (Jellyfin/Navidrome/…) need **no** configuration here — users connect to their
-   server from the app UI, exactly like the desktop build.
+   See [`.env.example`](./.env.example). Personal media servers (Jellyfin/Navidrome/…)
+   need **no** configuration here — users connect from the app UI, like the desktop build.
 
-5. **Deploy.** Every push to the production branch rebuilds and deploys.
-   `https://<project>.pages.dev` (add a custom domain in the dashboard if wanted).
+5. **Deploy.** Every push to the production branch rebuilds and deploys to
+   `https://ampcast.<your-subdomain>.workers.dev` (add a custom domain in the
+   dashboard if wanted).
 
 ## What's wired up in this repo
 
 | File | Role |
 |---|---|
-| `wrangler.jsonc` | Pages project config (`pages_build_output_dir: app/www`) |
-| `.node-version` | Pins the Pages build image to Node 24 (`engines` requires ≥24) |
+| `wrangler.jsonc` | Worker config: `main: worker/index.js`, static `assets.directory: app/www`, `not_found_handling: 404-page` |
+| `worker/index.js` | Serves `/proxy-login`; everything else falls through to static assets |
+| `.node-version` | Pins the build image to Node 24 (`engines` requires ≥24) |
 | `app/www/_headers` | Caching: immutable for versioned `/v*` assets; no-cache for `index.html`, `manifest.json` and the service workers (so updates propagate) |
-| `app/www/404.html` | Served automatically by Pages for unknown routes |
-| `functions/proxy-login.js` | Pages Function port of the Node `proxy-login.js` (see below) |
-| `.gitignore` | Build artifacts (`app/www/v*/`, generated `index.html`, service workers) are not committed — Pages builds them from source |
+| `app/www/404.html` | Used by `not_found_handling: "404-page"` |
+| `.gitignore` | Build artifacts (`app/www/v*/`, generated `index.html`, service workers) are not committed — Cloudflare builds them from source |
 
 ## How this differs from the Node server (`server.js`)
 
 `server.js` has three jobs; here is where each one went:
 
-1. **Static file serving** → Cloudflare Pages CDN (native).
-2. **Serve-time `%KEY%` substitution in `bundle.js`** → not needed: the `pwa`
-   build target bakes the env vars in at **build time** (the placeholders only
-   exist in `dev`/`docker` builds).
-3. **`/proxy-login`** (automated login for *pre-configured* personal media
-   servers) → `functions/proxy-login.js`. Caveats:
-   - Pre-configuring servers via `JELLYFIN_HOST` etc. is a serve-time feature of
-     the `docker` target and is **not available** in this static deployment, so
-     the stock client never calls `/proxy-login`. The Function is included for
-     parity/future use; set `<SERVER>_USER` / `<SERVER>_PASSWORD` as **secrets**
-     if you ever enable that flow.
+1. **Static file serving** → Workers static assets (requests matching a file never
+   invoke the Worker, and are free).
+2. **Serve-time `%KEY%` substitution in `bundle.js`** → not needed: the `pwa` build
+   target bakes the env vars in at **build time** (placeholders only exist in
+   `dev`/`docker` builds).
+3. **`/proxy-login`** (automated login for *pre-configured* personal media servers) →
+   `worker/index.js`. Caveats:
+   - Pre-configuring servers via `JELLYFIN_HOST` etc. is a serve-time feature of the
+     `docker` target and is **not available** in this static deployment, so the stock
+     client never calls `/proxy-login`. It's included for parity/future use; set
+     `<SERVER>_USER` / `<SERVER>_PASSWORD` as **Worker secrets** if you enable that flow.
    - Running on Cloudflare's edge, it can only reach media servers that are
      **publicly reachable** (not `localhost`/LAN).
 
 ## Notes & gotchas
 
-- **PWA/service worker**: production builds register `service-worker-v2.js`;
-  `_headers` keeps it `no-cache` so new versions are picked up promptly. Users
-  may still need one extra reload to activate an update (standard SW behavior).
+- **PWA/service worker**: production builds register `service-worker-v2.js`, which
+  precaches the app shell — so the installed app also **launches offline**;
+  `_headers` keeps it `no-cache` so new versions are picked up promptly.
 - **CORS**: the app talks to media servers directly from the browser. Your
-  Jellyfin/Navidrome must be reachable over **HTTPS** from wherever the app is
-  served (same as today).
-- **OAuth redirect URLs**: if you configure Spotify/Google/etc. client IDs,
-  register the deployed origin (e.g. `https://<project>.pages.dev` or your
-  custom domain) in each provider's allowed redirect/origin settings. The static
+  Jellyfin/Navidrome must be reachable over **HTTPS** from wherever the app is served.
+- **OAuth redirect URLs**: if you configure Spotify/Google/etc. client IDs, register
+  the deployed origin in each provider's allowed redirect/origin settings. The static
   callback pages live under `app/www/auth/`.
 - **Local preview of the production build**:
 
   ```bash
   npm run build:pwa
-  npx wrangler pages dev app/www
+  npx wrangler dev
   ```
 
-  (Serves the static output + the `/proxy-login` Function on `localhost:8788`.)
+  (Serves the static output + the `/proxy-login` Worker on `localhost:8787`.)

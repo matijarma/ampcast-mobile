@@ -1,26 +1,32 @@
 import md5 from 'md5';
 
-// Cloudflare Pages Function port of `proxy-login.js` (repo root).
+// Cloudflare Worker entry (deployed via `wrangler deploy` / Workers Builds).
 //
-// Provides automated ("proxy") logins for pre-configured personal media servers, using
-// `<SERVER>_USER` / `<SERVER>_PASSWORD` from the Pages project's environment variables
-// (set them as encrypted secrets in the Cloudflare dashboard).
+// The static app (built into `app/www` by `npm run build:pwa`) is served by Workers
+// static assets — requests that match an asset never reach this code. Only non-asset
+// requests arrive here; the lone dynamic route is `/proxy-login` (a port of the Node
+// `proxy-login.js` at the repo root).
 //
-// NOTES (differences from the Node server):
-// - This runs on Cloudflare's edge, so it can only reach media servers that are
-//   accessible from the public internet (no `localhost` / LAN / docker fallbacks).
-// - With the standard static (`build:pwa`) deployment the client only calls this
-//   endpoint when personal media servers are pre-configured; see DEPLOY-CLOUDFLARE.md.
+// `/proxy-login` provides automated logins for pre-configured personal media servers,
+// using `<SERVER>_USER` / `<SERVER>_PASSWORD` from the Worker's environment (set them
+// as secrets in the Cloudflare dashboard). Running on Cloudflare's edge it can only
+// reach servers that are publicly accessible (no `localhost`/LAN fallbacks).
 
-export function onRequestGet(context) {
-    return handleProxyLogin(context);
-}
+export default {
+    async fetch(request, env) {
+        const {pathname} = new URL(request.url);
+        if (pathname === '/proxy-login') {
+            if (request.method === 'GET' || request.method === 'POST') {
+                return handleProxyLogin(request, env);
+            }
+            return textResponse('Forbidden', 403);
+        }
+        // Anything else falls through to the static assets (404 handling included).
+        return env.ASSETS.fetch(request);
+    },
+};
 
-export function onRequestPost(context) {
-    return handleProxyLogin(context);
-}
-
-async function handleProxyLogin({request, env}) {
+async function handleProxyLogin(request, env) {
     const {searchParams} = new URL(request.url);
     const server = searchParams.get('server') || '';
     const url = searchParams.get('url') || '';
