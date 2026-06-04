@@ -16,6 +16,13 @@ html.mobile {
     // Master scale knob. base.scss multiplies --font-size by --font-scale.
     // Default is 1 (declared in theming.scss); tune for phones here in QA.
     --font-scale: 1;
+
+    // The dialog layers clamp their font with vw/vh units for desktop overlays
+    // (2vw ≈ 8px on a phone → microscopic dialogs). Use the app font-size instead.
+    #system,
+    #fullscreen-system {
+        font-size: calc(var(--font-size) * var(--font-scale, 1) * 1px);
+    }
 }
 
 .app.mobile,
@@ -37,6 +44,9 @@ html.mobile {
     html,
     body {
         overscroll-behavior: none;
+        // App-like gestures: allow panning, block pinch-zoom and double-tap zoom
+        // (belt-and-braces with the viewport meta, which iOS Safari tabs ignore).
+        touch-action: pan-x pan-y;
     }
 
     .mobile-tab,
