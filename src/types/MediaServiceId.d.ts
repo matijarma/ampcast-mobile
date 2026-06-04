@@ -20,7 +20,7 @@ export type PersonalMediaServiceId =
 
 export type ScrobblerId = 'lastfm' | 'listenbrainz';
 
-export type DataServiceId = 'localdb' | ScrobblerId;
+export type DataServiceId = 'localdb' | 'downloads' | ScrobblerId;
 
 type MediaServiceId = PublicMediaServiceId | PersonalMediaServiceId | DataServiceId;
 

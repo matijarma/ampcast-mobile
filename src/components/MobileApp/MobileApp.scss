@@ -1,0 +1,116 @@
+@use 'styles/effects.scss';
+
+.mobile-app {
+    position: absolute;
+    inset: 0;
+    isolation: isolate; // contain the Now Playing sheet's z-index
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.mobile-app-content {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.mobile-tab-panel {
+    position: absolute;
+    inset: 0;
+
+    &[hidden] {
+        display: none;
+    }
+}
+
+// ---- Generic mobile screen scaffold (header + body), shared by every tab ----------
+
+.mobile-screen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.mobile-screen-header {
+    @include effects.surface;
+    --amb-light-hue: var(--frame-color-h);
+    --amb-light-saturation: var(--frame-color-s);
+    --amb-key-light-intensity: var(--frame-color-l2);
+    --amb-fill-light-intensity: 0.4;
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: var(--safe-top) 0.5em 0;
+    min-height: calc(var(--tap-target) + var(--safe-top));
+    color: var(--frame-text-color);
+
+    .icon-button {
+        flex: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: var(--tap-target);
+        min-height: var(--tap-target);
+
+        .icon {
+            width: 1.25em;
+            height: 1.25em;
+        }
+    }
+}
+
+.mobile-screen-title {
+    flex: 1 1 auto;
+    margin: 0;
+    padding: 0 0.25em;
+    font-size: 1.25em;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mobile-screen-body {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+
+    > [hidden] {
+        display: none;
+    }
+}
+
+// Library tab panes (tree + drilled-in browser) fill the body so their inner `.panel`s size correctly.
+.mobile-library-pane {
+    position: absolute;
+    inset: 0;
+}
+
+.mobile-empty-state {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1em;
+    padding: 2em;
+    text-align: center;
+    opacity: 0.7;
+
+    .icon {
+        width: 3em;
+        height: 3em;
+    }
+
+    p {
+        max-width: 18em;
+    }
+}

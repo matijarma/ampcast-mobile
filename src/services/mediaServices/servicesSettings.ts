@@ -104,7 +104,8 @@ export function isServiceVisible(service: MediaService | MediaServiceId): boolea
 export function isSourceHidden(source: AnyMediaSource): boolean {
     const settings = hidden$.value;
     const defaultHidden = isMediaService(source)
-        ? !isStartupService(source.id)
+        ? // Downloads is a built-in feature (not an external service): visible by default.
+          source.id !== 'downloads' && !isStartupService(source.id)
         : !!source.defaultHidden;
     return settings[source.id] ?? defaultHidden;
 }

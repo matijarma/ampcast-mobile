@@ -1,4 +1,5 @@
 @use 'styles/effects.scss';
+@use 'styles/responsive.scss' as r;
 
 .popup-menu {
     @include effects.button;
@@ -121,5 +122,53 @@
 
     .media-source-label .icon {
         margin-right: 0.5em;
+    }
+}
+
+// On phones, context menus become a bottom action-sheet (long-press / overflow trigger
+// still calls the same onContextMenu contract). `!important` overrides the JS cursor
+// coordinates set as inline styles. Top-level menus only — nested submenus render inline.
+@include r.mobile {
+    .popup-menu {
+        left: 0 !important;
+        right: 0 !important;
+        top: auto !important;
+        bottom: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: 70vh;
+        max-height: 70dvh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+        border-left: 0;
+        border-right: 0;
+        border-bottom: 0;
+        border-radius: calc(var(--app-border-radius) * 2) calc(var(--app-border-radius) * 2) 0 0;
+        padding-bottom: var(--safe-bottom);
+
+        button {
+            min-width: 0;
+            min-height: var(--tap-target);
+            justify-content: flex-start;
+            padding: 0.5em 1.25em;
+            font-size: 1.0625em;
+        }
+
+        .popup-menu-item-label {
+            max-width: none;
+        }
+
+        .popup-menu-item-accelerator-key {
+            display: none; // keyboard accelerators are meaningless on touch
+        }
+
+        // Nested submenus: render inline within the sheet rather than as fly-outs.
+        .popup-menu-item .popup-menu {
+            position: static !important;
+            max-height: none;
+            border-radius: 0;
+            padding-bottom: 0;
+        }
     }
 }

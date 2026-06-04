@@ -9,6 +9,7 @@ import {Pinnable} from 'types/Pin';
 import PlayAction from 'types/PlayAction';
 import {Logger} from 'utils';
 import actionsStore from 'services/actions/actionsStore';
+import {download, removeDownload} from 'services/downloads';
 import mediaPlayback from 'services/mediaPlayback';
 import pinStore from 'services/pins/pinStore';
 import playlist from 'services/playlist';
@@ -63,6 +64,27 @@ export default async function performAction<T extends MediaObject>(
 
         case Action.Info:
             await showMediaInfoDialog(item);
+            break;
+
+        case Action.Download:
+            try {
+                await download(item);
+            } catch (err) {
+                logger.error(err);
+                await error(
+                    err instanceof Error && err.message
+                        ? err.message
+                        : 'An error occurred while downloading.'
+                );
+            }
+            break;
+
+        case Action.RemoveDownload:
+            try {
+                await removeDownload(item);
+            } catch (err) {
+                logger.error(err);
+            }
             break;
 
         case Action.AddToPlaylist:

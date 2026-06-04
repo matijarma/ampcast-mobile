@@ -1,0 +1,21 @@
+# Cloudflare Pages caching rules (only applies to static assets).
+# Versioned build assets are immutable; the entry points must always revalidate
+# so deploys and service-worker updates propagate immediately.
+
+/v*
+  Cache-Control: public, max-age=31536000, immutable
+
+/
+  Cache-Control: no-cache
+
+/index.html
+  Cache-Control: no-cache
+
+/service-worker.js
+  Cache-Control: no-cache
+
+/service-worker-v2.js
+  Cache-Control: no-cache
+
+/manifest.json
+  Cache-Control: no-cache

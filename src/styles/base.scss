@@ -3,8 +3,24 @@
 html {
     background: #32312f;
     font-family: var(--font-family, var(--system-font-family));
-    font-size: calc(var(--font-size) * 1px);
+    font-size: calc(var(--font-size) * var(--font-scale, 1) * 1px);
     -webkit-font-smoothing: antialiased;
+}
+
+:root {
+    // Safe-area insets (require viewport-fit=cover; resolve to 0 on desktop / non-notched).
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+    // Dynamic viewport-height unit for full-bleed mobile surfaces (survives URL-bar show/hide).
+    --vh-unit: 1vh;
+}
+
+@supports (height: 100dvh) {
+    :root {
+        --vh-unit: 1dvh;
+    }
 }
 
 body {

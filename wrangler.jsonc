@@ -1,0 +1,10 @@
+// Cloudflare Pages configuration.
+// The project is deployed by connecting this repo to Cloudflare Pages via Git:
+//   build command:    npm run build:pwa
+//   build output dir: app/www   (declared below)
+// See DEPLOY-CLOUDFLARE.md for the full walkthrough.
+{
+    "name": "ampcast",
+    "pages_build_output_dir": "./app/www",
+    "compatibility_date": "2026-06-01"
+}

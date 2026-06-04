@@ -1,0 +1,115 @@
+.now-playing-screen {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
+    background-color: var(--background-color);
+    color: var(--text-color);
+    transform: translateY(100%);
+    transition: transform 280ms ease;
+
+    &.expanded {
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .now-playing-screen {
+        transition: none;
+    }
+}
+
+.now-playing-header {
+    flex: none;
+    display: flex;
+    align-items: center;
+    min-height: var(--tap-target);
+
+    .now-playing-collapse {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: var(--tap-target);
+        min-height: var(--tap-target);
+
+        .icon {
+            // A back-arrow rotated to point down = "minimise sheet".
+            transform: rotate(-90deg);
+            width: 1.25em;
+            height: 1.25em;
+        }
+    }
+}
+
+.now-playing-media {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.now-playing-info {
+    flex: none;
+    padding: 0.75em 1em 0.25em;
+    text-align: center;
+
+    .now-playing-title {
+        margin: 0;
+        font-size: 1.25em;
+        font-weight: 600;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .now-playing-artist {
+        margin: 0.25em 0 0;
+        opacity: 0.7;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+.now-playing-transport {
+    flex: none;
+    padding: 0.5em 1em 0;
+
+    .media-controls {
+        font-size: 1.25em;
+    }
+
+    // Stack the transport: big centred play/skip buttons above a full-width volume slider
+    // (desktop lays them out side-by-side and caps the volume slider at 4.5em).
+    .playback-control {
+        flex-direction: column-reverse;
+        align-items: stretch;
+        gap: 0.5em;
+    }
+
+    .media-buttons {
+        justify-content: center;
+        margin: 0;
+    }
+
+    .volume-control input[type='range'] {
+        max-width: none;
+        flex: auto;
+    }
+}
+
+.now-playing-queue-button {
+    flex: none;
+    margin: 0.75em 1em 1em;
+    padding: 0.75em;
+    min-height: var(--tap-target);
+    border: 0;
+    border-radius: calc(var(--roundness) * 1rem);
+    background-color: var(--frame-color);
+    color: var(--frame-text-color);
+    font-family: inherit;
+    font-size: 1em;
+    cursor: pointer;
+}

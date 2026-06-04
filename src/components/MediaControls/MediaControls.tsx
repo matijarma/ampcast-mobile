@@ -13,15 +13,16 @@ import './MediaControls-overlay.scss';
 
 export interface MediaControlsProps {
     overlay?: boolean;
+    compact?: boolean;
     playlistRef?: React.RefObject<ListViewHandle | null>;
 }
 
-export default function MediaControls({overlay, playlistRef}: MediaControlsProps) {
+export default function MediaControls({overlay, compact, playlistRef}: MediaControlsProps) {
     const currentlyPlaying = useCurrentlyPlaying();
     const {paused} = usePlaybackState();
 
     return (
-        <div className={`media-controls${overlay ? '-overlay' : ''}`}>
+        <div className={`media-controls${overlay ? '-overlay' : ''}${compact ? ' compact' : ''}`}>
             <TimeControl overlay={overlay} />
             <div className="playback-control">
                 <VolumeControl overlay={overlay} />
@@ -41,7 +42,9 @@ export default function MediaControls({overlay, playlistRef}: MediaControlsProps
                         <MediaButtons overlay={overlay} playlistRef={playlistRef} />
                     </div>
                 )}
-                {!overlay && playlistRef ? <PlaylistMenuButton playlistRef={playlistRef} /> : null}
+                {!overlay && !compact && playlistRef ? (
+                    <PlaylistMenuButton playlistRef={playlistRef} />
+                ) : null}
             </div>
         </div>
     );

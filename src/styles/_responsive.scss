@@ -1,0 +1,75 @@
+// Responsive breakpoint tokens + media/feature mixins. Mixins only — no CSS output.
+// Imported where needed via the `styles` alias: `@use 'styles/responsive.scss' as r;`
+//
+// Keep these values in sync with `src/services/layout/breakpoints.ts`
+// (MOBILE_BREAKPOINT = 768, TABLET_BREAKPOINT = 1024).
+
+$mobile-breakpoint: 768px !default;
+$tablet-breakpoint: 1024px !default;
+$short-breakpoint: 500px !default;
+
+// ---- Width queries -------------------------------------------------
+// The `- 0.02px` avoids the boundary overlap where max-width and min-width
+// queries both match at exactly the breakpoint (Bootstrap/Tailwind convention).
+
+@mixin mobile {
+    @media (max-width: #{$mobile-breakpoint - 0.02px}) {
+        @content;
+    }
+}
+
+@mixin tablet {
+    @media (min-width: #{$mobile-breakpoint}) and (max-width: #{$tablet-breakpoint - 0.02px}) {
+        @content;
+    }
+}
+
+@mixin mobile-and-tablet {
+    @media (max-width: #{$tablet-breakpoint - 0.02px}) {
+        @content;
+    }
+}
+
+@mixin desktop {
+    @media (min-width: #{$tablet-breakpoint}) {
+        @content;
+    }
+}
+
+@mixin short {
+    // Short landscape phones — collapse vertical chrome.
+    @media (max-height: #{$short-breakpoint}) and (max-width: #{$tablet-breakpoint - 0.02px}) {
+        @content;
+    }
+}
+
+// ---- Capability queries (orthogonal to width) ----------------------
+
+@mixin touch {
+    @media (hover: none) and (pointer: coarse) {
+        @content;
+    }
+}
+
+@mixin hover {
+    @media (any-hover: hover) {
+        @content;
+    }
+}
+
+// ---- Class-gated variants (JS-toggled on <html> and #app) ----------
+// Use these when behaviour must follow the app's MODE (set by useResponsiveClasses)
+// rather than only the raw viewport query — and to win the specificity race against
+// theme.ts's runtime `.app` token writes.
+
+@mixin mobile-mode {
+    .app.mobile & {
+        @content;
+    }
+}
+
+@mixin touch-mode {
+    .app.touch & {
+        @content;
+    }
+}

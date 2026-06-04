@@ -3,6 +3,8 @@ const enum Action {
     Unpin = 'unpin',
     Rate = 'rate',
     Info = 'info',
+    Download = 'download',
+    RemoveDownload = 'remove-download',
     AddToLibrary = 'library-add',
     RemoveFromLibrary = 'library-remove',
     AddStation = 'station-add',

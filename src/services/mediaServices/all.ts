@@ -3,6 +3,7 @@ import {exists} from 'utils';
 import airsonic from 'services/subsonic/airsonic';
 import ampache from 'services/subsonic/ampache';
 import apple from 'services/apple';
+import downloads from 'services/downloads/downloadsService';
 import emby from 'services/emby';
 import gonic from 'services/subsonic/gonic';
 import jellyfin from 'services/jellyfin';
@@ -38,6 +39,7 @@ const allServices: readonly MediaService[] = [
     subsonic,
     youtube,
     internetRadio,
+    downloads,
     lastfm,
     listenbrainz,
     localdb,

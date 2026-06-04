@@ -7,6 +7,7 @@ import MediaObject from 'types/MediaObject';
 import MediaPlaylist from 'types/MediaPlaylist';
 import MediaSource from 'types/MediaSource';
 import {browser} from 'utils';
+import {canDownload, isDownloaded} from 'services/downloads';
 import {isListen} from 'services/localdb/listens';
 import {getService, getServiceFromSrc} from 'services/mediaServices';
 import PopupMenu, {
@@ -172,6 +173,22 @@ function ContextualActions<T extends MediaObject>({
                     />
                     <PopupMenuSeparator />
                 </>
+            ) : null}
+
+            {canDownload(item) ? (
+                item.itemType === ItemType.Media && isDownloaded(item.src) ? (
+                    <PopupMenuItem<Action>
+                        label="Remove download"
+                        value={Action.RemoveDownload}
+                        key={Action.RemoveDownload}
+                    />
+                ) : (
+                    <PopupMenuItem<Action>
+                        label={item.itemType === ItemType.Media ? 'Download' : 'Download all'}
+                        value={Action.Download}
+                        key={Action.Download}
+                    />
+                )
             ) : null}
 
             {item.inLibrary === false && service?.canStore?.(item, inListView) ? (

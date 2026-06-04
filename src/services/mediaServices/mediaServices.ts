@@ -186,6 +186,8 @@ const playabilityByServiceId: Record<
     subsonic: Playability.LoggedIn,
     tidal: Playability.LoggedIn,
     // Not playable.
+    // (Downloaded items keep their original `src`, so 'downloads:' never appears in srcs.)
+    downloads: Playability.Never,
     localdb: Playability.Never,
     lastfm: Playability.Never,
     listenbrainz: Playability.Never,

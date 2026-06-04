@@ -31,6 +31,7 @@ import PlaylistItem from 'types/PlaylistItem';
 import RepeatMode from 'types/RepeatMode';
 import {formatTime, isMiniPlayer, Logger} from 'utils';
 import {MAX_DURATION} from 'services/constants';
+import {getDownloadedBlob} from 'services/downloads/downloadsStore';
 import {createMediaItemFromUrl, dispatchMetadataChanges} from 'services/metadata';
 import lookup from 'services/lookup';
 import {hasPlayableSrc, getServiceFromSrc} from 'services/mediaServices';
@@ -293,6 +294,11 @@ async function getPlayableItem(item: PlaylistItem | null): Promise<PlaylistItem 
         return null;
     }
     try {
+        // Prefer a locally downloaded copy if available (also enables offline playback).
+        const blob = await getDownloadedBlob(item.src);
+        if (blob) {
+            return {...item, blob, playbackType: PlaybackType.Direct};
+        }
         if (!hasPlayableSrc(item)) {
             // Lookup the item if it's not from a playable source (e.g last.fm).
             const foundItem = await lookup(item);

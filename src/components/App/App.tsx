@@ -1,5 +1,6 @@
 import React, {useCallback, useState} from 'react';
 import {browser, LiteStorage} from 'utils';
+import {isMobileLayout} from 'services/layout/layoutMode';
 import SvgDefs from 'components/Icon/SvgDefs';
 import AppContent from './AppContent';
 import DesktopWarning from './DesktopWarning';
@@ -9,7 +10,9 @@ const settings = new LiteStorage('desktopWarning');
 
 export default function App() {
     const [desktopWarningDismissed, setDesktopWarningDismissed] = useState(
-        () => browser.desktop || settings.getBoolean('dismissed')
+        // The dedicated mobile layout is a first-class experience, so the "built for desktop"
+        // warning is irrelevant there — suppress it whenever the mobile shell is active.
+        () => browser.desktop || isMobileLayout() || settings.getBoolean('dismissed')
     );
     const [portUnavailableDismissed, setPortUnavailableDismissed] = useState(
         () => !browser.isElectron

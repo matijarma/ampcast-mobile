@@ -1,4 +1,5 @@
 @use 'styles/effects.scss';
+@use 'styles/responsive.scss' as r;
 
 .media-list.list-view {
     .playing {
@@ -700,5 +701,75 @@
 
     &:not(.focus) + .status-bar .selected {
         display: none;
+    }
+
+    // Mobile: details lists are made non-sizeable (see useMediaListLayout) and laid out as a
+    // fitting flex row instead of fixed-width absolute columns, so they never overflow
+    // horizontally. Only the essential columns are shown; the title flexes to fill.
+    @include r.mobile {
+        &-details {
+            .list-view-head {
+                display: none;
+            }
+
+            .list-view-cursor {
+                height: var(--tap-target, 2.75rem);
+            }
+
+            .list-view-row {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+            }
+
+            .list-view-cell {
+                position: static;
+                height: auto;
+                padding: 0 0.375em;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            // Hide every column by default, then reveal the essentials.
+            .list-view-row > .list-view-cell {
+                display: none;
+            }
+
+            .list-view-cell.index {
+                display: flex;
+                order: 0;
+                flex: 0 0 auto;
+                min-width: 1.5em;
+                align-items: center;
+                justify-content: flex-end;
+            }
+
+            .list-view-cell.title {
+                display: flex;
+                order: 1;
+                flex: 1 1 auto;
+                min-width: 0;
+                align-items: center;
+            }
+
+            .list-view-cell.artist {
+                display: flex;
+                order: 2;
+                flex: 0 1 auto;
+                min-width: 0;
+                max-width: 38%;
+                align-items: center;
+                color: var(--grey2-color);
+            }
+
+            .list-view-cell.duration {
+                display: flex;
+                order: 3;
+                flex: 0 0 auto;
+                align-items: center;
+                justify-content: flex-end;
+            }
+        }
     }
 }

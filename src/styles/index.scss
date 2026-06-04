@@ -2,3 +2,4 @@
 @use './theming.scss';
 @use './base.scss';
 @use './forms.scss';
+@use './mobile.scss'; // responsive overrides — must be last (highest static source order)

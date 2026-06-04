@@ -158,6 +158,7 @@ export default function ListView<T>({
     const scrollableRef = useRef<ScrollableHandle>(null);
     const cursorRef = useRef<HTMLDivElement>(null);
     const dragImageRef = useRef<HTMLUListElement>(null);
+    const pointerTypeRef = useRef<string>('mouse');
     const fontSize = useFontSize(containerRef);
     const showTitles = layout.view === 'details' && layout.showTitles;
     const sizeable = layout.view === 'details' && layout.sizeable;
@@ -452,15 +453,25 @@ export default function ListView<T>({
         'border-box'
     );
 
+    const handlePointerDown = useCallback((event: React.PointerEvent) => {
+        pointerTypeRef.current = event.pointerType;
+    }, []);
+
     const handleClick = useCallback(
         (event: React.MouseEvent) => {
             const rowIndex = getRowIndexFromMouseEvent(event);
             if (rowIndex !== -1) {
                 event.preventDefault();
-                onClick?.(items[rowIndex], rowIndex);
+                // On touch a single tap activates (plays/opens) — the desktop double-click.
+                // Mouse keeps single-click = onClick (select); see handleDoubleClick.
+                if (isTouchActivation(pointerTypeRef.current) && onDoubleClick) {
+                    onDoubleClick(items[rowIndex], rowIndex);
+                } else {
+                    onClick?.(items[rowIndex], rowIndex);
+                }
             }
         },
-        [items, onClick]
+        [items, onClick, onDoubleClick]
     );
 
     const handleContextMenu = useCallback(
@@ -497,6 +508,10 @@ export default function ListView<T>({
 
     const handleDoubleClick = useCallback(
         (event: React.MouseEvent) => {
+            // Touch activates on a single tap (see handleClick); ignore the synthetic dblclick.
+            if (isTouchActivation(pointerTypeRef.current)) {
+                return;
+            }
             const rowIndex = getRowIndexFromMouseEvent(event);
             if (rowIndex !== -1) {
                 event.preventDefault();
@@ -665,6 +680,7 @@ export default function ListView<T>({
             onKeyUp={handleKeyUp}
             onMouseDown={handleMouseDown}
             onMouseUp={handleMouseUp}
+            onPointerDown={handlePointerDown}
             ref={containerRef}
         >
             <Scrollable
@@ -761,6 +777,13 @@ function isRowSelectedFromMouseEvent(event: React.MouseEvent): boolean {
 
 function getRowFromMouseEvent(event: React.MouseEvent): HTMLElement | null {
     return (event.target as HTMLElement).closest('[aria-posinset]');
+}
+
+// On touch a single tap should activate (play/open) — the equivalent of a desktop
+// double-click. Detect via the coarse-pointer capability (deterministic) plus the
+// per-event pointer type (correct for hybrid mouse+touch devices).
+function isTouchActivation(pointerType: string): boolean {
+    return pointerType !== 'mouse' || matchMedia('(hover: none) and (pointer: coarse)').matches;
 }
 
 function getRowByIndex(listView: HTMLElement, rowIndex: number): HTMLElement | null {

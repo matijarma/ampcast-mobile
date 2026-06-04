@@ -7,6 +7,7 @@ import {setSourceFields} from 'services/mediaServices/servicesSettings';
 import {ListViewLayout} from 'components/ListView';
 import DefaultActions, {ActionsProps} from 'components/Actions';
 import {PopupMenuButton} from 'components/Button';
+import useIsMobile from 'hooks/useIsMobile';
 import mediaListFields, {FieldSpec} from './mediaListFields';
 import useMediaListFields from './useMediaListFields';
 import useMediaListView from './useMediaListView';
@@ -22,6 +23,7 @@ export default function useMediaListLayout(
 ): ListViewLayout<MediaObject> {
     const view = useMediaListView(listId);
     const fields = useMediaListFields(listId);
+    const isMobile = useIsMobile();
     return useMemo(() => {
         let extraFields: Field[] = [
             'Index',
@@ -43,15 +45,17 @@ export default function useMediaListLayout(
                 extraFields,
             },
             Actions,
+            isMobile,
             parentPlaylist
         );
-    }, [listId, view, fields, defaultLayout, layoutOptions, Actions, parentPlaylist]);
+    }, [listId, view, fields, defaultLayout, layoutOptions, Actions, isMobile, parentPlaylist]);
 }
 
 function createMediaListLayout(
     listId: string,
     layout: MediaListLayout,
     Actions: React.FC<ActionsProps>,
+    isMobile: boolean,
     parentPlaylist?: MediaPlaylist
 ): ListViewLayout<MediaObject> {
     if (layout.view === 'none') {
@@ -116,7 +120,9 @@ function createMediaListLayout(
         if (/\bindex\b/.test(cols[0].className!)) {
             cols[0] = {...cols[0], title: '#'};
         }
-        return {view, cols, showTitles: true, sizeable: true};
+        // On mobile, drop column resizing/headers — the row is laid out as a fitting flex
+        // row (see MediaList.scss) so the columns never overflow horizontally.
+        return {view, cols, showTitles: !isMobile, sizeable: !isMobile};
     } else {
         const getField = (field: Field | undefined, className: string): FieldSpec | undefined => {
             if (field) {

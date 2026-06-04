@@ -347,6 +347,17 @@ async function embyFetch(
     return response;
 }
 
+function getDownloadUrl(item: PlayableItem, settings: EmbySettings = embySettings): string {
+    const {apiHost, token} = settings;
+    if (apiHost && token) {
+        const [, , id] = item.src.split(':');
+        const params = new URLSearchParams({api_key: token});
+        return `${apiHost}/Items/${id}/Download?${params}`;
+    } else {
+        throw Error('Not logged in');
+    }
+}
+
 function getPlayableUrl(item: PlayableItem, settings: EmbySettings = embySettings): string {
     const {apiHost, userId, token, deviceId} = settings;
     if (apiHost && userId && token && deviceId) {
@@ -443,6 +454,7 @@ const embyApi = {
     getEndpointInfo,
     getLyrics,
     getMusicLibraries,
+    getDownloadUrl,
     getPlayableUrl,
     getPlaybackType,
     getSystemInfo,

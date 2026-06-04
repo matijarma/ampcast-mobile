@@ -89,6 +89,7 @@ const emby: PersonalMediaService = {
     createPlaylist,
     createSourceFromPin,
     editPlaylist,
+    getDownloadUrl,
     getFilters,
     getLyrics,
     getMediaObject,
@@ -218,6 +219,10 @@ async function getMediaObject<T extends MediaObject>(src: string): Promise<T> {
         maxSize: 1,
     });
     return fetchFirstItem<T>(pager, {timeout: 2000});
+}
+
+function getDownloadUrl(item: PlayableItem): string {
+    return embyApi.getDownloadUrl(item);
 }
 
 function getPlayableUrl(item: PlayableItem): string {

@@ -174,6 +174,10 @@ async function post(path: string, params: Record<string, Primitive> = {}): Promi
     return embyApi.post(path, params, jellyfinSettings);
 }
 
+function getDownloadUrl(item: PlayableItem): string {
+    return embyApi.getDownloadUrl(item, jellyfinSettings);
+}
+
 function getPlayableUrl(item: PlayableItem): string {
     return embyApi.getPlayableUrl(item, jellyfinSettings);
 }
@@ -198,6 +202,7 @@ const jellyfinApi = {
     getFilters,
     getLyrics,
     getMusicLibraries,
+    getDownloadUrl,
     getPlayableUrl,
     getPlaybackType,
     getSystemInfo,

@@ -1,3 +1,5 @@
+@use 'styles/responsive.scss' as r;
+
 .playlist {
     display: flex;
     flex-direction: column;
@@ -124,5 +126,14 @@
         &-icons {
             margin-right: 0.25em;
         }
+    }
+}
+
+// Taller, touch-friendly queue rows. Playlist rows are flex-centred (above), so growing
+// the measured row height (driven by the cursor element) keeps content vertically centred.
+// Scoped to the `details` layout so card layouts keep their own (already large) row size.
+@include r.touch {
+    .playlist .list-view-details .list-view-cursor {
+        height: var(--tap-target, 2.75rem);
     }
 }

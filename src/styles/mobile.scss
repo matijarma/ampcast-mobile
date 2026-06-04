@@ -1,0 +1,52 @@
+// Central mobile token overrides. @used LAST from index.scss so it has the highest
+// static source order. These deliberately ride on higher-specificity selectors than
+// theme.ts's runtime writes (:root / .app) so they layer on top of ANY active skin
+// with no !important. Only metrics/scale change here — never colors — so every skin
+// keeps its palette and "feel" on mobile.
+//
+// Specificity contract:
+//   theme.ts writes --font-size on :root (0,1,0) and shape/color tokens on .app (0,1,0),
+//   in a <style> appended last to <head>.
+//   html.mobile (0,1,1) beats :root regardless of source order  -> safe for --font-scale.
+//   .app.mobile / .app.touch (0,2,0) beats .app regardless of source order.
+
+@use './responsive.scss' as r;
+
+html.mobile {
+    // Master scale knob. base.scss multiplies --font-size by --font-scale.
+    // Default is 1 (declared in theming.scss); tune for phones here in QA.
+    --font-scale: 1;
+}
+
+.app.mobile,
+.app.touch {
+    --tap-target: max(2.75rem, 44px); // touch target floor (>= 44px at any font size)
+    --row-min-height: var(--tap-target); // list / tree / menu rows
+}
+
+.app.mobile {
+    --spacing: 0.25; // slightly tighter outer gutter so content reaches the edges
+    --tab-bar-height: 3.5rem;
+    --mini-player-height: 3.5rem;
+}
+
+// Touch behaviour hardening — capability-gated (orthogonal to width), so it never
+// affects mouse/desktop. Stops pull-to-refresh/rubber-banding and the long-press
+// magnifier from fighting our gestures, and lets sliders own horizontal drags.
+@include r.touch {
+    html,
+    body {
+        overscroll-behavior: none;
+    }
+
+    .mobile-tab,
+    .mini-player-bar,
+    .now-playing-screen,
+    .icon-button {
+        -webkit-touch-callout: none;
+    }
+
+    input[type='range'] {
+        touch-action: none;
+    }
+}

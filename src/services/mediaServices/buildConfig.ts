@@ -69,6 +69,7 @@ export function isServiceDisabled(service: MediaService | MediaServiceId): boole
     const serviceId: MediaServiceId = typeof service === 'string' ? service : service.id;
     return (
         serviceId !== 'localdb' &&
+        serviceId !== 'downloads' &&
         enabledServices.length !== 0 &&
         !enabledServices.includes(serviceId) &&
         localStorage.getItem(`ampcast/${serviceId}/enabled`) !== 'true'

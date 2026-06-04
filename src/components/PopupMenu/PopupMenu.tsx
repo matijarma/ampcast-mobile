@@ -85,6 +85,13 @@ export default function PopupMenu<T extends string>({
                                         !containerRef.current!.contains(event.target as HTMLElement)
                                 )
                             ),
+                            // Touch: a tap outside (the scrim) dismisses the action-sheet.
+                            fromEvent(document, 'pointerdown', {capture: true}).pipe(
+                                filter(
+                                    (event) =>
+                                        !containerRef.current!.contains(event.target as HTMLElement)
+                                )
+                            ),
                             fromEvent<KeyboardEvent>(document, 'keydown', {capture: true}).pipe(
                                 filter((event) => event.code === 'Escape' || event.code === 'Tab')
                             ),

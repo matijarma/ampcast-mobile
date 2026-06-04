@@ -1,3 +1,5 @@
+@use 'styles/responsive.scss' as r;
+
 #app-layout {
     & > .layout-pane-1 {
         min-width: 18rem;
@@ -53,5 +55,20 @@
 
     & > .layout-pane-2 {
         min-width: 12rem;
+    }
+}
+
+// On mobile the top-level #app-layout splitter isn't rendered (the mobile shell
+// replaces it), but nested splitters reused inside browser views must collapse so
+// their panes fit a phone. !important is justified here: the base rules are id-scoped
+// (e.g. #app-layout = (1,1,0)) and this query can't reach that specificity without
+// re-listing every id. Desktop-safe — the query never matches at >= 768px.
+@include r.mobile {
+    [class*='layout-pane-'] {
+        // Drop only the min-size locks. Keep each pane's percentage flex-basis — the panes'
+        // content is absolutely positioned, so `flex-basis: auto` would collapse them to 0
+        // height (which silently breaks the pager: pageSize 0 -> nothing ever loads).
+        min-width: 0 !important;
+        min-height: 0 !important;
     }
 }
