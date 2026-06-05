@@ -2,6 +2,7 @@ import React, {useCallback, useEffect, useImperativeHandle, useRef, useState} fr
 import {Subscription, fromEvent} from 'rxjs';
 import {Except} from 'type-fest';
 import {clamp, preventDefault, stopPropagation} from 'utils';
+import {registerBackHandler} from 'services/layout/backStack';
 import {IconName} from 'components/Icon';
 import MediaSourceLabel from 'components/MediaSources/MediaSourceLabel';
 import CloseButton from './CloseButton';
@@ -51,6 +52,16 @@ export default function Dialog({
 
     useEffect(() => {
         dialogRef.current?.showModal();
+    }, []);
+
+    useEffect(() => {
+        // Mobile: hardware Back closes the dialog (same funnel as the close button —
+        // the native `close` event fires `onClose`, which unmounts).
+        return registerBackHandler(() => {
+            if (dialogRef.current?.open) {
+                dialogRef.current.close();
+            }
+        });
     }, []);
 
     useEffect(() => {

@@ -164,6 +164,18 @@ function ContextualActions<T extends MediaObject>({
 
     return (
         <>
+            {item.itemType === ItemType.Folder ? (
+                <>
+                    <PopupMenuItem<Action>
+                        label="Open"
+                        value={Action.Open}
+                        acceleratorKey="Enter"
+                        key={Action.Open}
+                    />
+                    <PopupMenuSeparator />
+                </>
+            ) : null}
+
             {service?.canPin?.(item, inListView) ? (
                 <>
                     <PopupMenuItem<Action>

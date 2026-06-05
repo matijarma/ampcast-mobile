@@ -23,6 +23,32 @@ html.mobile {
     #fullscreen-system {
         font-size: calc(var(--font-size) * var(--font-scale, 1) * 1px);
     }
+
+    // "Press back again to exit" pill (created by services/layout/backStack.ts;
+    // lives in #system). Theme-independent by design, like a native Android toast.
+    // NB: #system has `contain`, making it the containing block for `fixed` — and its
+    // box doesn't span the viewport, so `bottom` is useless here. Anchor from the top
+    // with viewport units instead (same trick as the full-screen dialogs).
+    .back-exit-toast {
+        position: fixed;
+        left: 50%;
+        top: calc(100dvh - 8rem - var(--safe-bottom, 0px)); // pill bottom clears tab bar + mini-player
+        transform: translate(-50%, -100%);
+        max-width: calc(100vw - 2rem);
+        padding: 0.625em 1.25em;
+        border-radius: 2em;
+        background-color: rgba(0, 0, 0, 0.85);
+        color: #fff;
+        font-size: max(1em, 14px);
+        white-space: nowrap;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+
+        &.visible {
+            opacity: 1;
+        }
+    }
 }
 
 .app.mobile,

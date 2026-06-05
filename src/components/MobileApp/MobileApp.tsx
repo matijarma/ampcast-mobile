@@ -1,4 +1,5 @@
-import React, {useCallback} from 'react';
+import React, {useCallback, useEffect} from 'react';
+import {registerBackHandler, setBackRootHandlers} from 'services/layout/backStack';
 import MobileTabBar from './MobileTabBar/MobileTabBar';
 import MiniPlayerBar from './MiniPlayerBar/MiniPlayerBar';
 import NowPlayingScreen from './NowPlayingScreen/NowPlayingScreen';
@@ -25,6 +26,22 @@ export default function MobileApp() {
         collapseNowPlaying();
         setActiveTab('queue');
     }, [collapseNowPlaying, setActiveTab]);
+
+    // Hardware Back with no layers open: non-library tab → Library; at the Library
+    // root the backStack shows the "Press back again to exit" confirmation.
+    useEffect(() => {
+        setBackRootHandlers({
+            getActiveTab: () => activeTab,
+            goLibrary: () => setActiveTab('library'),
+        });
+        return () => setBackRootHandlers(null);
+    }, [activeTab, setActiveTab]);
+
+    useEffect(() => {
+        if (nowPlayingExpanded) {
+            return registerBackHandler(collapseNowPlaying);
+        }
+    }, [nowPlayingExpanded, collapseNowPlaying]);
 
     return (
         <div className="mobile-app">

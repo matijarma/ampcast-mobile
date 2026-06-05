@@ -1,6 +1,7 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {filter, fromEvent, merge, switchMap, timer} from 'rxjs';
 import {preventDefault} from 'utils';
+import {registerBackHandler} from 'services/layout/backStack';
 import useBaseFontSize from 'hooks/useBaseFontSize';
 import './PopupMenu.scss';
 
@@ -72,6 +73,16 @@ export default function PopupMenu<T extends string>({
             }
         }
     }, [focusable, autoFocus]);
+
+    useEffect(() => {
+        if (onClose) {
+            // Mobile: hardware Back dismisses the menu (same funnel as an outside tap).
+            return registerBackHandler(() => {
+                restoreRef.current?.focus();
+                onClose();
+            });
+        }
+    }, [onClose]);
 
     useEffect(() => {
         if (onClose) {

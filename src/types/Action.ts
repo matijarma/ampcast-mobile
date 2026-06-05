@@ -1,4 +1,5 @@
 const enum Action {
+    Open = 'open',
     Pin = 'pin',
     Unpin = 'unpin',
     Rate = 'rate',

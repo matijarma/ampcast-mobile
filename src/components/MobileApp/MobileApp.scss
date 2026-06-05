@@ -1,4 +1,5 @@
 @use 'styles/effects.scss';
+@use 'styles/responsive.scss' as r;
 
 .mobile-app {
     position: absolute;
@@ -112,5 +113,104 @@
 
     p {
         max-width: 18em;
+    }
+}
+
+// ---- Generic full-width tappable list menu ----------------------------------------
+// Master-detail list rows (settings categories, search service picker). Lives under
+// the width query (not `.mobile-app`) because the settings dialog renders in `#system`.
+
+@include r.mobile {
+    .mobile-list-menu {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+        margin: 0;
+        padding: 0.25em 0 calc(0.5em + var(--safe-bottom));
+        list-style: none;
+    }
+
+    .mobile-list-menu-item {
+        button {
+            display: flex;
+            align-items: center;
+            gap: 0.75em;
+            width: 100%;
+            min-height: var(--tap-target, 2.75rem);
+            padding: 0.375em 1em;
+            border: 0;
+            border-bottom: 1px solid var(--background-mark-color);
+            background: transparent;
+            color: inherit;
+            font-family: inherit;
+            font-size: 1.0625em;
+            text-align: left;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+
+            // The trailing chevron (direct child only — label icons sit deeper).
+            > .icon {
+                flex: none;
+                width: 0.75em;
+                height: 0.75em;
+                opacity: 0.5;
+            }
+
+            &:active {
+                background-color: var(--hover-row-background-color);
+            }
+        }
+
+        &.indented button {
+            padding-left: 2.5em;
+        }
+    }
+
+    .mobile-list-menu-item-label {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .mobile-list-menu-back {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
+        width: 100%;
+        min-height: var(--tap-target, 2.75rem);
+        padding: 0.375em 1em;
+        border: 0;
+        border-bottom: 1px solid var(--background-mark-color);
+        background: transparent;
+        color: inherit;
+        font-family: inherit;
+        font-size: 1.0625em;
+        font-weight: 600;
+        text-align: left;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+
+        > .icon {
+            flex: none;
+            width: 0.875em;
+            height: 0.875em;
+        }
+    }
+
+    .mobile-list-menu-back-label {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 }

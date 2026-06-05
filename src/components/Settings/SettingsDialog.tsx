@@ -1,5 +1,6 @@
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {LiteStorage} from 'utils';
+import {registerBackHandler} from 'services/layout/backStack';
 import Dialog, {DialogProps} from 'components/Dialog';
 import Icon from 'components/Icon';
 import TreeView, {TreeNode} from 'components/TreeView';
@@ -20,6 +21,14 @@ export default function SettingsDialog(props: DialogProps) {
 
     const back = useCallback(() => setSelected(null), []);
 
+    // Mobile: hardware Back pops the drilled-in category before closing the dialog
+    // (this entry stacks above the dialog's own — LIFO).
+    useEffect(() => {
+        if (isMobile && selected) {
+            return registerBackHandler(back);
+        }
+    }, [isMobile, selected, back]);
+
     if (isMobile) {
         return (
             <Dialog {...props} className="settings-dialog" icon="settings" title="Settings">
@@ -27,18 +36,18 @@ export default function SettingsDialog(props: DialogProps) {
                     <>
                         <button
                             type="button"
-                            className="settings-mobile-back"
+                            className="mobile-list-menu-back"
                             onClick={back}
                         >
                             <Icon name="left" />
-                            <span className="settings-mobile-back-label">{selected.label}</span>
+                            <span className="mobile-list-menu-back-label">{selected.label}</span>
                         </button>
                         <div className="settings-dialog-source" key={selected.id}>
                             {selected.value}
                         </div>
                     </>
                 ) : (
-                    <ul className="settings-mobile-list">
+                    <ul className="mobile-list-menu">
                         {sources.map((node) => (
                             <React.Fragment key={node.id}>
                                 <SettingsMobileItem node={node} onSelect={setSelected} />
@@ -81,9 +90,9 @@ function SettingsMobileItem({node, child, onSelect}: SettingsMobileItemProps) {
     const handleClick = useCallback(() => onSelect(node), [node, onSelect]);
 
     return (
-        <li className={`settings-mobile-item ${child ? 'settings-mobile-child' : ''}`}>
+        <li className={`mobile-list-menu-item ${child ? 'indented' : ''}`}>
             <button type="button" onClick={handleClick}>
-                <span className="settings-mobile-item-label">{node.label}</span>
+                <span className="mobile-list-menu-item-label">{node.label}</span>
                 <Icon name="right" />
             </button>
         </li>

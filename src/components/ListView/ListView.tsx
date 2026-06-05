@@ -478,17 +478,39 @@ export default function ListView<T>({
         (event: React.MouseEvent) => {
             event.preventDefault();
             if (event.button === -1 || (browser.os !== 'Mac OS' && event.button === 0)) {
-                // Not mouse-driven.
-                const row = getRowByIndex(containerRef.current!, rowIndex);
-                if (row) {
-                    const rect = row.getBoundingClientRect();
-                    onContextMenu?.(
-                        selectedItems,
-                        Math.min(rect.left + clientWidth, rect.right),
-                        rect.bottom,
-                        -1,
-                        rowIndex
-                    );
+                // Not mouse-driven: touch long-press or keyboard menu key.
+                const newRowIndex = getRowIndexFromMouseEvent(event);
+                if (newRowIndex !== -1) {
+                    // Touch long-press: unlike right-click, no mousedown precedes the
+                    // `contextmenu` event, so selection hasn't moved to the pressed row
+                    // yet. Move it now and act on the pressed row directly (selection
+                    // state updates asynchronously).
+                    setRowIndex(newRowIndex);
+                    if (isRowSelectedFromMouseEvent(event)) {
+                        onContextMenu?.(selectedItems, event.pageX, event.pageY, -1, newRowIndex);
+                    } else {
+                        selectAt(newRowIndex);
+                        onContextMenu?.(
+                            [items[newRowIndex]],
+                            event.pageX,
+                            event.pageY,
+                            -1,
+                            newRowIndex
+                        );
+                    }
+                } else {
+                    // Keyboard: no row under the event target; anchor to the focused row.
+                    const row = getRowByIndex(containerRef.current!, rowIndex);
+                    if (row) {
+                        const rect = row.getBoundingClientRect();
+                        onContextMenu?.(
+                            selectedItems,
+                            Math.min(rect.left + clientWidth, rect.right),
+                            rect.bottom,
+                            -1,
+                            rowIndex
+                        );
+                    }
                 }
             } else {
                 const newRowIndex = getRowIndexFromMouseEvent(event);
@@ -503,7 +525,7 @@ export default function ListView<T>({
                 }
             }
         },
-        [rowIndex, selectedItems, onContextMenu, clientWidth]
+        [rowIndex, selectedItems, items, selectAt, onContextMenu, clientWidth]
     );
 
     const handleDoubleClick = useCallback(

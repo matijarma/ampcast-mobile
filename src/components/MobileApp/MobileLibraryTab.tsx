@@ -1,4 +1,5 @@
-import React, {useCallback, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {registerBackHandler} from 'services/layout/backStack';
 import {showDialog} from 'components/Dialog';
 import {SettingsDialog} from 'components/Settings';
 import {IconButton} from 'components/Button';
@@ -40,6 +41,13 @@ export default function MobileLibraryTab() {
     }, []);
 
     const back = useCallback(() => setShowBrowser(false), []);
+
+    // Hardware Back pops the drilled-in browser back to the source tree.
+    useEffect(() => {
+        if (showBrowser) {
+            return registerBackHandler(back);
+        }
+    }, [showBrowser, back]);
 
     const openSettings = useCallback(() => {
         showDialog(SettingsDialog, true);

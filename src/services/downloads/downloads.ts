@@ -1,13 +1,15 @@
 import type {Observable} from 'rxjs';
-import {BehaviorSubject, combineLatest, filter, firstValueFrom, map, race, Subscription, timer} from 'rxjs';
+import {BehaviorSubject, combineLatest, filter, map, race, take, timer} from 'rxjs';
 import ItemType from 'types/ItemType';
 import MediaAlbum from 'types/MediaAlbum';
+import MediaFolder from 'types/MediaFolder';
+import MediaFolderItem from 'types/MediaFolderItem';
 import MediaItem from 'types/MediaItem';
 import MediaObject from 'types/MediaObject';
 import MediaPlaylist from 'types/MediaPlaylist';
-import Pager from 'types/Pager';
-import {exists, LiteStorage, Logger} from 'utils';
+import {LiteStorage, Logger} from 'utils';
 import {getServiceFromSrc} from 'services/mediaServices';
+import fetchAllTracks from 'services/pagers/fetchAllTracks';
 import {
     addDownload,
     getDownloadsSize,
@@ -23,7 +25,7 @@ const logger = new Logger('downloads');
 
 const storage = new LiteStorage('downloads');
 
-const downloadableTypes = [ItemType.Media, ItemType.Album, ItemType.Playlist];
+const downloadableTypes = [ItemType.Media, ItemType.Album, ItemType.Playlist, ItemType.Folder];
 
 const pendingCount$ = new BehaviorSubject(0);
 
@@ -97,37 +99,54 @@ async function getTracks(item: MediaObject): Promise<readonly MediaItem[]> {
 
         case ItemType.Album:
         case ItemType.Playlist:
-            return fetchAllItems((item as MediaAlbum | MediaPlaylist).pager);
+            return fetchAllTracks(item as MediaAlbum | MediaPlaylist);
+
+        case ItemType.Folder: {
+            // Just the audio files directly inside the folder (not recursive).
+            const items = await fetchFolderItems(item as MediaFolder);
+            return items.filter(
+                (item): item is Exclude<MediaFolderItem, MediaFolder> =>
+                    item.itemType === ItemType.Media
+            );
+        }
 
         default:
             return [];
     }
 }
 
-// Drive a pager until every item has loaded (albums/playlists are bounded in size).
-async function fetchAllItems(pager: Pager<MediaItem>): Promise<readonly MediaItem[]> {
-    const subscription = new Subscription();
-    try {
-        subscription.add(
-            pager.observeItems().subscribe((items) => pager.fetchAt(items.length))
+// Same approach as `fetchAllTracks`, but folders have no `trackCount` to use as the
+// fetch limit (and their pager also yields subfolders and the '../' navigation item).
+function fetchFolderItems(folder: MediaFolder): Promise<readonly MediaFolderItem[]> {
+    return new Promise((resolve, reject) => {
+        const pager = folder.pager;
+        const limit = 1000;
+        const items$ = combineLatest([pager.observeItems(), pager.observeSize()]).pipe(
+            filter(
+                ([items, size]) => items.reduce((total) => (total += 1), 0) >= Math.min(size, limit)
+            ),
+            map(([items]) => items),
+            take(1)
         );
-        pager.fetchAt(0);
-        return await firstValueFrom(
-            race(
-                combineLatest([pager.observeItems(), pager.observeSize()]).pipe(
-                    filter(([items, size]) => items.length >= size && items.every(exists)),
-                    map(([items]) => items)
+        const error$ = race(
+            pager
+                .observeError()
+                .pipe(
+                    map((error: any) =>
+                        error instanceof Error ? error : Error(error?.message || 'unknown')
+                    )
                 ),
-                timer(60_000).pipe(
-                    map((): readonly MediaItem[] => {
-                        throw Error('Timed out fetching items');
-                    })
-                )
-            )
+            timer(10_000).pipe(map(() => Error('Timed out fetching folder items')))
         );
-    } finally {
-        subscription.unsubscribe();
-    }
+        race(items$, error$).subscribe((result) => {
+            if (result instanceof Error) {
+                reject(result);
+            } else {
+                resolve(result);
+            }
+        });
+        pager.fetchAt(0, limit);
+    });
 }
 
 // Strip transient/blob fields before persisting the metadata snapshot.

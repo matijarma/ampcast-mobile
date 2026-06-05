@@ -63,106 +63,14 @@
 }
 
 // Mobile: master-detail. The dialog body shows a full-width category list (large touch
-// rows); tapping a category swaps in its panel full-width with a back row on top. The
-// desktop TreeView is not rendered on mobile (see SettingsDialog.tsx).
+// rows — see the shared `.mobile-list-menu` styles in MobileApp.scss); tapping a
+// category swaps in its panel full-width with a back row on top. The desktop TreeView
+// is not rendered on mobile (see SettingsDialog.tsx).
 @include r.mobile {
     .settings-dialog .dialog-body {
         flex-direction: column;
         overflow: hidden;
         padding: 0;
-    }
-
-    .settings-mobile-list {
-        flex: 1 1 auto;
-        min-height: 0;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        overscroll-behavior: contain;
-        margin: 0;
-        padding: 0.25em 0 calc(0.5em + var(--safe-bottom));
-        list-style: none;
-    }
-
-    .settings-mobile-item {
-        button {
-            display: flex;
-            align-items: center;
-            gap: 0.75em;
-            width: 100%;
-            min-height: var(--tap-target, 2.75rem);
-            padding: 0.375em 1em;
-            border: 0;
-            border-bottom: 1px solid var(--background-mark-color);
-            background: transparent;
-            color: inherit;
-            font-family: inherit;
-            font-size: 1.0625em;
-            text-align: left;
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-
-            // The trailing chevron (direct child only — label icons sit deeper).
-            > .icon {
-                flex: none;
-                width: 0.75em;
-                height: 0.75em;
-                opacity: 0.5;
-            }
-
-            &:active {
-                background-color: var(--hover-row-background-color);
-            }
-        }
-
-        &.settings-mobile-child button {
-            padding-left: 2.5em;
-        }
-    }
-
-    .settings-mobile-item-label {
-        flex: 1 1 auto;
-        min-width: 0;
-        display: flex;
-        align-items: center;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .settings-mobile-back {
-        flex: none;
-        display: flex;
-        align-items: center;
-        gap: 0.5em;
-        width: 100%;
-        min-height: var(--tap-target, 2.75rem);
-        padding: 0.375em 1em;
-        border: 0;
-        border-bottom: 1px solid var(--background-mark-color);
-        background: transparent;
-        color: inherit;
-        font-family: inherit;
-        font-size: 1.0625em;
-        font-weight: 600;
-        text-align: left;
-        cursor: pointer;
-        -webkit-tap-highlight-color: transparent;
-
-        > .icon {
-            flex: none;
-            width: 0.875em;
-            height: 0.875em;
-        }
-    }
-
-    .settings-mobile-back-label {
-        flex: 1 1 auto;
-        min-width: 0;
-        display: flex;
-        align-items: center;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
     }
 
     .settings-dialog-source {
